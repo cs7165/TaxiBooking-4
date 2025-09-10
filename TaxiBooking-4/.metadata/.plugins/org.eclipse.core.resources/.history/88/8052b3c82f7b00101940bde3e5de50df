@@ -1,0 +1,22 @@
+package com.sm.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class MyController {
+	
+	@GetMapping(path = {"/","index","welcome"})
+	public String indexView(Model model) {
+		
+		
+		String name = "DATA INSERTED SUCCESSFULLY";
+		
+		model.addAttribute("msg", name);
+		
+		
+		return "index";
+	}
+
+}
