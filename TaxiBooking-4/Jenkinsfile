@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk 'jdk17'
+        maven 'maven'
+    }
+
+    environment {
+        IMAGE_NAME = "taxibooking-app"
+        CONTAINER_NAME = "taxibooking-container"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/cs7165/TaxiBooking-4.git'
+            }
+        }
+
+        stage('Verify Tools') {
+            steps {
+                sh '''
+                java -version
+                mvn -version
+                docker --version
+                '''
+            }
+        }
+
+        stage('Build Application') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $IMAGE_NAME .'
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                sh '''
+                docker rm -f $CONTAINER_NAME || true
+                docker run -d \
+                  --name $CONTAINER_NAME \
+                  -p 8081:8080 \
+                  $IMAGE_NAME
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Taxi Booking App deployed on http://EC2_IP:8081"
+        }
+        failure {
+            echo "❌ Deployment Failed – check console output"
+        }
+    }
+}
