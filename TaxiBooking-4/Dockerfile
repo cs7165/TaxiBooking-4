@@ -1,12 +1,14 @@
-# Stage 1: Build the Spring Boot application
+# ---------- Build Stage ----------
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
-COPY . .
+COPY pom.xml .
+RUN mvn -B dependency:go-offline
+COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Stage 2: Runtime image
+# ---------- Runtime Stage ----------
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8081
-COPY --from=build /app/target/TaxiBooking-4-0.0.1-SNAPSHOT.jar TaxiBooking-4.jar
-ENTRYPOINT ["java", "-jar", "TaxiBooking-4.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
